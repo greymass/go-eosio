@@ -52,8 +52,10 @@ func True(t *testing.T, value bool) {
 func Equal(t *testing.T, actual, expected interface{}) {
 	if !isEqual(actual, expected) {
 		Fail(t, fmt.Sprintf("\n"+
-			"Not equal: %#v (actual)\n"+
-			"        != %#v (expected)", actual, expected))
+			"Not equal: %#v (actual <%v>)\n"+
+			"        != %#v (expected <%v>)",
+			actual, reflect.TypeOf(actual),
+			expected, reflect.TypeOf(expected)))
 	}
 }
 
