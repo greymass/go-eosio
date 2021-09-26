@@ -1,10 +1,5 @@
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-
-name: Test
+on: push
+name: Benchmark
 jobs:
   test:
     strategy:
@@ -26,12 +21,5 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: Run tests
-        run: go test -coverprofile=/tmp/coverage ./pkg/...
       - name: Run benchmarks
-        run: go test -benchmem -bench=. ./pkg/...
-      - name: Upload coverage
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage ${{ matrix.go-version }}
-          path: /tmp/coverage
+        run: cd benchmarks && go test && go test -benchmem -bench=.
