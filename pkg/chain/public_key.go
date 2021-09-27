@@ -64,6 +64,16 @@ func (pk *PublicKey) LegacyString(prefix string) string {
 	return prefix + base58.CheckEncode(pk.Data)
 }
 
+// abi.Marshaler conformance
+
+func (pk PublicKey) MarshalABI(e *abi.Encoder) error {
+	err := e.WriteByte(byte(pk.Type))
+	if err != nil {
+		return err
+	}
+	return e.WriteBytes(pk.Data)
+}
+
 // abi.Unmarshaler conformance
 
 func (pk *PublicKey) UnmarshalABI(d *abi.Decoder) error {

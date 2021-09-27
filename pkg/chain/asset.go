@@ -67,6 +67,16 @@ func (a *Asset) String() string {
 	return s + " " + a.Symbol.Name()
 }
 
+// abi.Marshaler conformance
+
+func (a *Asset) MarshalABI(e *abi.Encoder) error {
+	err := e.WriteInt64(a.Value)
+	if err != nil {
+		return err
+	}
+	return a.Symbol.MarshalABI(e)
+}
+
 // abi.Unmarshaler conformance
 
 func (a *Asset) UnmarshalABI(d *abi.Decoder) error {

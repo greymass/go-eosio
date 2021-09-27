@@ -80,6 +80,20 @@ func (bts BlockTimestamp) String() string {
 	return bts.Time().UTC().Format(TimePointFormat)
 }
 
+// abi.Marshaler conformance
+
+func (tp TimePoint) MarshalABI(e *abi.Encoder) error {
+	return e.WriteInt64(int64(tp))
+}
+
+func (tps TimePointSec) MarshalABI(e *abi.Encoder) error {
+	return e.WriteUint32(uint32(tps))
+}
+
+func (bts BlockTimestamp) MarshalABI(e *abi.Encoder) error {
+	return e.WriteUint32(uint32(bts))
+}
+
 // abi.Unmarshaler conformance
 
 func (tp *TimePoint) UnmarshalABI(d *abi.Decoder) error {

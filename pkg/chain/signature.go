@@ -48,6 +48,16 @@ func (pk *Signature) String() string {
 	return "SIG_" + pk.Type.String() + "_" + base58.CheckEncodeEosio(pk.Data, pk.Type.String())
 }
 
+// abi.Marshaler conformance
+
+func (s Signature) MarshalABI(e *abi.Encoder) error {
+	err := e.WriteByte(byte(s.Type))
+	if err != nil {
+		return err
+	}
+	return e.WriteBytes(s.Data)
+}
+
 // abi.Unmarshaler conformance
 
 func (s *Signature) UnmarshalABI(d *abi.Decoder) error {

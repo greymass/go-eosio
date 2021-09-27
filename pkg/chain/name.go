@@ -20,6 +20,12 @@ func (n Name) String() string {
 	return nameToString(uint64(n))
 }
 
+// abi.Marshaler conformance
+
+func (n Name) MarshalABI(e *abi.Encoder) error {
+	return e.WriteUint64(uint64(n))
+}
+
 // abi.Unmarshaler conformance
 
 func (n *Name) UnmarshalABI(d *abi.Decoder) error {

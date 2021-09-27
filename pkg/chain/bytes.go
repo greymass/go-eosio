@@ -14,6 +14,18 @@ func (b Bytes) Hex() string {
 	return hex.EncodeToString(b)
 }
 
+// abi.Marshaler conformance
+
+func (b Bytes) MarshalABI(e *abi.Encoder) error {
+	var err error
+	l := uint32(len(b))
+	err = e.WriteVaruint32(l)
+	if err == nil {
+		err = e.WriteBytes(b)
+	}
+	return err
+}
+
 // abi.Unmarshaler conformance
 
 func (b *Bytes) UnmarshalABI(d *abi.Decoder) error {

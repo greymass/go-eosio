@@ -62,6 +62,20 @@ func (c Checksum512) String() string {
 	return hex.EncodeToString(c[:])
 }
 
+// abi.Marshaler conformance
+
+func (c160 *Checksum160) MarshalABI(e *abi.Encoder) error {
+	return e.WriteBytes(c160[:])
+}
+
+func (c256 *Checksum256) MarshalABI(e *abi.Encoder) error {
+	return e.WriteBytes(c256[:])
+}
+
+func (c512 *Checksum512) MarshalABI(e *abi.Encoder) error {
+	return e.WriteBytes(c512[:])
+}
+
 // abi.Unmarshaler conformance
 
 func (c160 *Checksum160) UnmarshalABI(d *abi.Decoder) error {

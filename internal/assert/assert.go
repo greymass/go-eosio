@@ -85,10 +85,15 @@ func JSONCoding(t *testing.T, value interface{}, expectedJSON string) {
 }
 
 func ABICoding(t *testing.T, value interface{}, expectedBytes []byte) {
-	// TODO: also encode here when we have an encoder
+	var err error
+	b := bytes.NewBuffer(nil)
+	err = chain.NewEncoder(b).Encode(value)
+	NoError(t, err)
+	Equal(t, b.Bytes(), expectedBytes)
+
 	var valueRecoded interface{}
 	valueRecoded = reflect.New(reflect.ValueOf(value).Type()).Interface()
-	err := chain.NewDecoder(bytes.NewReader(expectedBytes)).Decode(valueRecoded)
+	err = chain.NewDecoder(bytes.NewReader(expectedBytes)).Decode(valueRecoded)
 	NoError(t, err)
 	valueRecoded = reflect.ValueOf(valueRecoded).Elem().Interface()
 	Equal(t, valueRecoded, value)

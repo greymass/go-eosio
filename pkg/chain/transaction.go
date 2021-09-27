@@ -23,6 +23,86 @@ type Transaction struct {
 	Extensions         []TransactionExtension `json:"transaction_extensions"`
 }
 
+// abi.Marshaler conformance
+
+func (txh TransactionHeader) MarshalABI(e *abi.Encoder) error {
+	var err error
+	err = txh.Expiration.MarshalABI(e)
+	if err != nil {
+		return err
+	}
+	err = e.WriteUint16(txh.RefBlockNum)
+	if err != nil {
+		return err
+	}
+	err = e.WriteUint32(txh.RefBlockPrefix)
+	if err != nil {
+		return err
+	}
+	err = e.WriteVaruint32(uint32(txh.MaxNetUsageWords))
+	if err != nil {
+		return err
+	}
+	err = e.WriteUint8(txh.MaxCpuUsageMs)
+	if err != nil {
+		return err
+	}
+	err = e.WriteVaruint32(uint32(txh.DelaySec))
+	return err
+}
+
+func (txe TransactionExtension) MarshalABI(e *abi.Encoder) error {
+	var err error
+	err = e.WriteUint16(txe.Type)
+	if err != nil {
+		return err
+	}
+	err = txe.Data.MarshalABI(e)
+	return err
+}
+
+func (tx Transaction) MarshalABI(e *abi.Encoder) error {
+	var err error
+	err = tx.TransactionHeader.MarshalABI(e)
+	if err != nil {
+		return err
+	}
+	l := uint32(len(tx.ContextFreeActions))
+	err = e.WriteVaruint32(l)
+	if err != nil {
+		return err
+	}
+	for i := uint32(0); i < l; i++ {
+		err = tx.ContextFreeActions[i].MarshalABI(e)
+		if err != nil {
+			return err
+		}
+	}
+	l = uint32(len(tx.Actions))
+	err = e.WriteVaruint32(l)
+	if err != nil {
+		return err
+	}
+	for i := uint32(0); i < l; i++ {
+		err = tx.Actions[i].MarshalABI(e)
+		if err != nil {
+			return err
+		}
+	}
+	l = uint32(len(tx.Extensions))
+	err = e.WriteVaruint32(l)
+	if err != nil {
+		return err
+	}
+	for i := uint32(0); i < l; i++ {
+		err = tx.Extensions[i].MarshalABI(e)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
 // abi.Unmarshaler conformance
 
 func (txh *TransactionHeader) UnmarshalABI(d *abi.Decoder) error {

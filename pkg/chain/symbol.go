@@ -78,6 +78,16 @@ func (s Symbol) String() string {
 	return fmt.Sprint(s.Decimals()) + "," + s.Name()
 }
 
+// abi.Marshaler conformance
+
+func (s Symbol) MarshalABI(e *abi.Encoder) error {
+	return e.WriteUint64(uint64(s))
+}
+
+func (sc SymbolCode) MarshalABI(e *abi.Encoder) error {
+	return e.WriteUint64(uint64(sc))
+}
+
 // abi.Unmarshaler conformance
 
 func (s *Symbol) UnmarshalABI(d *abi.Decoder) error {
@@ -88,10 +98,10 @@ func (s *Symbol) UnmarshalABI(d *abi.Decoder) error {
 	return err
 }
 
-func (s *SymbolCode) UnmarshalABI(d *abi.Decoder) error {
+func (sc *SymbolCode) UnmarshalABI(d *abi.Decoder) error {
 	v, err := d.ReadUint64()
 	if err == nil {
-		*s = SymbolCode(v)
+		*sc = SymbolCode(v)
 	}
 	return err
 }

@@ -2,6 +2,7 @@ package benchmarks_test
 
 import (
 	"bytes"
+	"io"
 	"testing"
 
 	"github.com/greymass/go-eosio/internal/assert"
@@ -10,6 +11,122 @@ import (
 
 	eoscanada "github.com/eoscanada/eos-go"
 )
+
+var testValue = chain.Transaction{
+	TransactionHeader: chain.TransactionHeader{
+		Expiration:       1519257492,
+		RefBlockNum:      1,
+		RefBlockPrefix:   2,
+		MaxNetUsageWords: 3,
+		MaxCpuUsageMs:    4,
+		DelaySec:         5,
+	},
+	ContextFreeActions: []chain.Action{
+		{
+			Account: 7338027470446133248,
+			Name:    11323884548116185088,
+			Authorization: []chain.PermissionLevel{
+				{Actor: 7241788200811757568, Permission: 3617214756542218240},
+			},
+			Data: []byte{
+				0xbe, 0xef,
+			},
+		},
+	},
+	Actions: []chain.Action{
+		{
+			Account: 7338027470446133248,
+			Name:    14829575318809870336,
+			Authorization: []chain.PermissionLevel{
+				{Actor: 3580161049631916032, Permission: 12224602554813644800},
+				{Actor: 5307181291334008832, Permission: 12224602554813644800},
+				{Actor: 9014633609356640256, Permission: 12224602554813644800},
+				{Actor: 10500712387475144704, Permission: 12224602554813644800},
+				{Actor: 10926484768698662912, Permission: 12224602554813644800},
+				{Actor: 13990885797717344256, Permission: 12224602554813644800},
+			},
+			Data: []byte{
+				0xde, 0xad, 0xc0, 0xde,
+			},
+		},
+		{
+			Account: 7338027470446133248,
+			Name:    6292810045348380672,
+			Authorization: []chain.PermissionLevel{
+				{Actor: 14595364149838066048, Permission: 3617214756542218240},
+			},
+			Data: []byte{
+				0xba, 0xbe, 0x92, 0x3c, 0x59, 0xd5, 0x14, 0x5b, 0xc3, 0x13, 0x03, 0x93, 0x35, 0xf5, 0x9f, 0x3b,
+				0xc7, 0x55, 0xfd, 0xe1, 0xde, 0xaf, 0xa1, 0x0e, 0x62, 0x43, 0xff, 0xf4, 0x23, 0x46, 0xbe, 0xb4,
+				0xb1, 0xe7, 0x81, 0x88, 0x5f, 0x1b, 0x6c, 0x82, 0x42, 0x60, 0x79, 0xcc, 0xb2, 0x7d, 0x9e, 0x74,
+				0x2f, 0x3f, 0x7f, 0x4e, 0x1b, 0x7b, 0xd0, 0xb9, 0x50, 0x82, 0x6d, 0x44, 0x3b, 0x50, 0xc2, 0xe6,
+				0xde, 0x34, 0xc0, 0x84, 0x6f, 0xcd, 0x84, 0xfa, 0x73, 0x6e, 0x70, 0x0e, 0xc5, 0x0b, 0x6b, 0xce,
+				0xbf, 0x36, 0x75, 0x41, 0x1d, 0x45, 0x48, 0x26, 0x07, 0xe1, 0x92, 0x2b, 0xcf, 0x8f, 0x9d, 0xf8,
+				0x5b, 0xc9, 0x8c, 0xb7, 0x1e, 0xcf, 0xa1, 0x67, 0x05, 0x36, 0xe3, 0x34, 0x0e, 0xd9, 0xc5, 0x9a,
+				0xe9, 0x54, 0xa6, 0x91, 0x6d, 0xed, 0x90, 0xa9, 0xe7, 0x88, 0x1e, 0xf1, 0xbb, 0x41, 0x1c, 0x05,
+			},
+		},
+	},
+}
+
+var testValueCanada = eoscanada.Transaction{
+	TransactionHeader: eoscanada.TransactionHeader{
+		Expiration: eoscanada.JSONTime{
+			Time: chain.TimePointSec(1519257492).Time(),
+		},
+		RefBlockNum:      1,
+		RefBlockPrefix:   2,
+		MaxNetUsageWords: 3,
+		MaxCPUUsageMS:    4,
+		DelaySec:         5,
+	},
+	ContextFreeActions: []*eoscanada.Action{
+		{
+			Account: "greymass",
+			Name:    "nonce",
+			Authorization: []eoscanada.PermissionLevel{
+				{Actor: "gm", Permission: "active"},
+			},
+			ActionData: eoscanada.NewActionDataFromHexData([]byte{
+				0xbe, 0xef,
+			}),
+		},
+	},
+	Actions: []*eoscanada.Action{
+		{
+			Account: "greymass",
+			Name:    "transform",
+			Authorization: []eoscanada.PermissionLevel{
+				{Actor: "aaron.gm", Permission: "pancake"},
+				{Actor: "daniel.gm", Permission: "pancake"},
+				{Actor: "johan.gm", Permission: "pancake"},
+				{Actor: "max.gm", Permission: "pancake"},
+				{Actor: "myles.gm", Permission: "pancake"},
+				{Actor: "scott.gm", Permission: "pancake"},
+			},
+			ActionData: eoscanada.NewActionDataFromHexData([]byte{
+				0xde, 0xad, 0xc0, 0xde,
+			}),
+		},
+		{
+			Account: "greymass",
+			Name:    "execute",
+			Authorization: []eoscanada.PermissionLevel{
+				{Actor: "teamgreymass", Permission: "active"},
+			},
+			ActionData: eoscanada.NewActionDataFromHexData([]byte{
+				0xba, 0xbe, 0x92, 0x3c, 0x59, 0xd5, 0x14, 0x5b, 0xc3, 0x13, 0x03, 0x93, 0x35, 0xf5, 0x9f, 0x3b,
+				0xc7, 0x55, 0xfd, 0xe1, 0xde, 0xaf, 0xa1, 0x0e, 0x62, 0x43, 0xff, 0xf4, 0x23, 0x46, 0xbe, 0xb4,
+				0xb1, 0xe7, 0x81, 0x88, 0x5f, 0x1b, 0x6c, 0x82, 0x42, 0x60, 0x79, 0xcc, 0xb2, 0x7d, 0x9e, 0x74,
+				0x2f, 0x3f, 0x7f, 0x4e, 0x1b, 0x7b, 0xd0, 0xb9, 0x50, 0x82, 0x6d, 0x44, 0x3b, 0x50, 0xc2, 0xe6,
+				0xde, 0x34, 0xc0, 0x84, 0x6f, 0xcd, 0x84, 0xfa, 0x73, 0x6e, 0x70, 0x0e, 0xc5, 0x0b, 0x6b, 0xce,
+				0xbf, 0x36, 0x75, 0x41, 0x1d, 0x45, 0x48, 0x26, 0x07, 0xe1, 0x92, 0x2b, 0xcf, 0x8f, 0x9d, 0xf8,
+				0x5b, 0xc9, 0x8c, 0xb7, 0x1e, 0xcf, 0xa1, 0x67, 0x05, 0x36, 0xe3, 0x34, 0x0e, 0xd9, 0xc5, 0x9a,
+				0xe9, 0x54, 0xa6, 0x91, 0x6d, 0xed, 0x90, 0xa9, 0xe7, 0x88, 0x1e, 0xf1, 0xbb, 0x41, 0x1c, 0x05,
+			}),
+		},
+	},
+}
 
 var testData = []byte{
 	0x94, 0x07, 0x8e, 0x5a, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x04, 0x05, 0x01, 0x00, 0x00,
@@ -46,6 +163,15 @@ func TestDecode(t *testing.T) {
 	assert.Equal(t, tx.Actions[len(tx.Actions)-1].Account.String(), "greymass")
 }
 
+func TestEncode(t *testing.T) {
+	var err error
+
+	b := bytes.NewBuffer(nil)
+	err = chain.NewEncoder(b).Encode(testValue)
+	assert.NoError(t, err)
+	assert.Equal(t, b.Bytes(), testData)
+}
+
 func TestDecodeEosCanada(t *testing.T) {
 	var err error
 	var tx eoscanada.Transaction
@@ -53,6 +179,14 @@ func TestDecodeEosCanada(t *testing.T) {
 	err = eoscanada.NewDecoder(testData).Decode(&tx)
 	assert.NoError(t, err)
 	assert.Equal(t, tx.Actions[len(tx.Actions)-1].Account, eoscanada.AccountName("greymass"))
+}
+
+func TestDecodeCanada(t *testing.T) {
+	var err error
+	b := bytes.NewBuffer(nil)
+	err = eoscanada.NewEncoder(b).Encode(testValueCanada)
+	assert.NoError(t, err)
+	assert.Equal(t, b.Bytes(), testData)
 }
 
 // benchmarks
@@ -114,13 +248,114 @@ func BenchmarkDecodeNoOptimize(b *testing.B) {
 	}
 }
 
-// the competition :)
-
 func BenchmarkDecodeEosCanada(b *testing.B) {
 	var err error
 	for i := 0; i < b.N; i++ {
 		var tx eoscanada.Transaction
 		err = eoscanada.NewDecoder(testData).Decode(&tx)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkEncode(b *testing.B) {
+	var err error
+	for i := 0; i < b.N; i++ {
+		err = chain.NewEncoder(io.Discard).Encode(testValue)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+var testValueNoOptimize = Transaction{
+	TransactionHeader: TransactionHeader{
+		Expiration:       uint32(testValue.Expiration),
+		RefBlockNum:      testValue.RefBlockNum,
+		RefBlockPrefix:   testValue.RefBlockPrefix,
+		MaxNetUsageWords: testValue.MaxNetUsageWords,
+		MaxCpuUsageMs:    testValue.MaxCpuUsageMs,
+		DelaySec:         testValue.DelaySec,
+	},
+	ContextFreeActions: []Action{
+		{
+			Account: uint64(testValue.ContextFreeActions[0].Account),
+			Name:    uint64(testValue.ContextFreeActions[0].Name),
+			Authorization: []PermissionLevel{
+				{
+					Actor:      uint64(testValue.ContextFreeActions[0].Authorization[0].Actor),
+					Permission: uint64(testValue.ContextFreeActions[0].Authorization[0].Permission),
+				},
+			},
+			Data: testValue.ContextFreeActions[0].Data,
+		},
+	},
+	Actions: []Action{
+		{
+			Account: uint64(testValue.Actions[0].Account),
+			Name:    uint64(testValue.Actions[0].Name),
+			Authorization: []PermissionLevel{
+				{
+					Actor:      uint64(testValue.Actions[0].Authorization[0].Actor),
+					Permission: uint64(testValue.Actions[0].Authorization[0].Permission),
+				},
+				{
+					Actor:      uint64(testValue.Actions[0].Authorization[1].Actor),
+					Permission: uint64(testValue.Actions[0].Authorization[1].Permission),
+				},
+				{
+					Actor:      uint64(testValue.Actions[0].Authorization[2].Actor),
+					Permission: uint64(testValue.Actions[0].Authorization[2].Permission),
+				},
+				{
+					Actor:      uint64(testValue.Actions[0].Authorization[3].Actor),
+					Permission: uint64(testValue.Actions[0].Authorization[3].Permission),
+				},
+				{
+					Actor:      uint64(testValue.Actions[0].Authorization[4].Actor),
+					Permission: uint64(testValue.Actions[0].Authorization[4].Permission),
+				},
+				{
+					Actor:      uint64(testValue.Actions[0].Authorization[5].Actor),
+					Permission: uint64(testValue.Actions[0].Authorization[5].Permission),
+				},
+			},
+			Data: testValue.Actions[0].Data,
+		},
+		{
+			Account: uint64(testValue.Actions[1].Account),
+			Name:    uint64(testValue.Actions[1].Name),
+			Authorization: []PermissionLevel{
+				{
+					Actor:      uint64(testValue.Actions[1].Authorization[0].Actor),
+					Permission: uint64(testValue.Actions[1].Authorization[0].Permission),
+				},
+			},
+			Data: testValue.Actions[1].Data,
+		},
+	},
+	Extensions: []TransactionExtension{},
+}
+
+func noopEncode(enc *abi.Encoder, v interface{}) (done bool, err error) {
+	return false, nil
+}
+
+func BenchmarkEncodeNoOptimize(b *testing.B) {
+	var err error
+	for i := 0; i < b.N; i++ {
+		err = abi.NewEncoder(io.Discard, noopEncode).Encode(testValueNoOptimize)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkEncodeEosCanada(b *testing.B) {
+	var err error
+	for i := 0; i < b.N; i++ {
+		err = eoscanada.NewEncoder(io.Discard).Encode(testValueCanada)
 		if err != nil {
 			b.Fatal(err)
 		}

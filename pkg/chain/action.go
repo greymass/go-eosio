@@ -18,6 +18,31 @@ func NewAction(account Name, name Name, authorization []PermissionLevel, data By
 	return &Action{account, name, authorization, data}
 }
 
+// abi.Marshaler conformance
+
+func (pl PermissionLevel) MarshalABI(e *abi.Encoder) error {
+	pl.Actor.MarshalABI(e)
+	return pl.Permission.MarshalABI(e)
+}
+
+func (a Action) MarshalABI(e *abi.Encoder) error {
+	var err error
+	a.Account.MarshalABI(e)
+	a.Name.MarshalABI(e)
+	l := uint32(len(a.Authorization))
+	err = e.WriteVaruint32(l)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < int(l); i++ {
+		err = a.Authorization[i].MarshalABI(e)
+		if err != nil {
+			return err
+		}
+	}
+	return a.Data.MarshalABI(e)
+}
+
 // abi.Unmarshaler conformance
 
 func (pl *PermissionLevel) UnmarshalABI(d *abi.Decoder) error {
