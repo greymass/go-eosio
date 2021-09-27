@@ -49,6 +49,15 @@ func NewAssetFromString(s string) (*Asset, error) {
 	return &Asset{units, symbol}, nil
 }
 
+// Convenience for NewAssetFromString, panics for invalid assets.
+func A(s string) *Asset {
+	a, err := NewAssetFromString(s)
+	if err != nil {
+		panic(err)
+	}
+	return a
+}
+
 // String representation of asset, e.g. "1.0000 EOS"
 func (a *Asset) String() string {
 	s := ""
@@ -62,7 +71,11 @@ func (a *Asset) String() string {
 	s += fmt.Sprint(v / a.Symbol.Precision())
 	if a.Symbol.Decimals() > 0 {
 		f := v % a.Symbol.Precision()
-		s += "." + fmt.Sprint(f)
+		fs := strconv.Itoa(f)
+		for len(fs) < a.Symbol.Decimals() {
+			fs = fs + "0"
+		}
+		s += "." + fs
 	}
 	return s + " " + a.Symbol.Name()
 }
@@ -75,6 +88,14 @@ func (a *Asset) MarshalABI(e *abi.Encoder) error {
 		return err
 	}
 	return a.Symbol.MarshalABI(e)
+}
+
+func (ea *ExtendedAsset) MarshalABI(e *abi.Encoder) error {
+	err := ea.Quantity.MarshalABI(e)
+	if err != nil {
+		return err
+	}
+	return ea.Contract.MarshalABI(e)
 }
 
 // abi.Unmarshaler conformance
@@ -100,7 +121,7 @@ func (ea *ExtendedAsset) UnmarshalABI(d *abi.Decoder) error {
 
 // encoding.TextMarshaler conformance
 
-func (a *Asset) MarshalText() (text []byte, err error) {
+func (a Asset) MarshalText() (text []byte, err error) {
 	return []byte(a.String()), nil
 }
 

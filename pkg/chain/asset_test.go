@@ -40,6 +40,13 @@ func TestAsset(t *testing.T) {
 		0x2a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x42, 0x4f, 0x4e, 0x4b, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x80, 0xac, 0x29, 0xc2,
 	})
+
+	asset3, err := chain.NewAssetFromString("1.0000 EOS")
+	assert.NoError(t, err)
+	assert.Equal(t, asset3.Value, int64(10000))
+	assert.Equal(t, asset3.Decimals(), 4)
+	assert.Equal(t, asset3.Precision(), 10000)
+	assert.Equal(t, asset3.String(), "1.0000 EOS")
 }
 
 func BenchmarkAssetFromString(b *testing.B) {

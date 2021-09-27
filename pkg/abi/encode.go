@@ -135,7 +135,6 @@ func (enc *Encoder) EncodeValue(v reflect.Value) error {
 	}
 
 	return nil
-
 }
 
 // writing methods
