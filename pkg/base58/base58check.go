@@ -4,8 +4,7 @@ import (
 	"crypto/sha256"
 	"errors"
 
-	//lint:ignore SA1019 ok google, y u no deprecate sha1
-	"golang.org/x/crypto/ripemd160"
+	"github.com/greymass/go-eosio/pkg/ripemd160"
 )
 
 // ErrChecksum indicates that the checksum of a check-encoded string does not verify against the checksum.

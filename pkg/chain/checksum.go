@@ -5,10 +5,8 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 
-	//lint:ignore SA1019 ripemd160 is deprecated because google knows better than you, and it will be slow to punish you for your sins
-	"golang.org/x/crypto/ripemd160"
-
 	"github.com/greymass/go-eosio/pkg/abi"
+	"github.com/greymass/go-eosio/pkg/ripemd160"
 )
 
 // ripemd160 checksum type
