@@ -226,8 +226,16 @@ func (a Abi) encodeInner(enc *abi.Encoder, t *resolvedType, v interface{}) error
 			}
 		case "uint64":
 			var vv uint64
+			var vv2 Uint64
 			if vv, ok = v.(uint64); ok {
 				err = enc.WriteUint64(vv)
+			} else if vv2, ok = v.(Uint64); ok {
+				err = enc.WriteInt64(int64(vv2))
+			}
+		case "uint128":
+			var vv Uint128
+			if vv, ok = v.(Uint128); ok {
+				err = vv.MarshalABI(enc)
 			}
 		case "int8":
 			var vv int8
@@ -249,6 +257,11 @@ func (a Abi) encodeInner(enc *abi.Encoder, t *resolvedType, v interface{}) error
 			if vv, ok = v.(int64); ok {
 				err = enc.WriteInt64(vv)
 			}
+		case "int128":
+			var vv Int128
+			if vv, ok = v.(Int128); ok {
+				err = vv.MarshalABI(enc)
+			}
 		case "float32":
 			var vv float32
 			if vv, ok = v.(float32); ok {
@@ -258,6 +271,11 @@ func (a Abi) encodeInner(enc *abi.Encoder, t *resolvedType, v interface{}) error
 			var vv float64
 			if vv, ok = v.(float64); ok {
 				err = enc.WriteFloat64(vv)
+			}
+		case "float128":
+			var vv Float128
+			if vv, ok = v.(Float128); ok {
+				err = vv.MarshalABI(enc)
 			}
 		case "varuint32":
 			var vv uint32
@@ -274,7 +292,6 @@ func (a Abi) encodeInner(enc *abi.Encoder, t *resolvedType, v interface{}) error
 			if vv, ok = v.([]byte); ok {
 				err = enc.WriteBytes(vv)
 			}
-		// TODO: float128, uint128, int128
 		// chain builtins
 		case "asset":
 			var vv Asset
@@ -441,16 +458,29 @@ func (a Abi) decodeInner(dec *abi.Decoder, t *resolvedType, v *interface{}) erro
 		case "int64":
 			*v, err = dec.ReadInt64()
 		case "uint64":
-			*v, err = dec.ReadUint64()
+			var uv uint64
+			uv, err = dec.ReadUint64()
+			*v = Uint64(uv)
+		case "int128":
+			var rv Int128
+			err = rv.UnmarshalABI(dec)
+			*v = rv
+		case "uint128":
+			var rv Uint128
+			err = rv.UnmarshalABI(dec)
+			*v = rv
 		case "float32":
 			*v, err = dec.ReadFloat32()
 		case "float64":
 			*v, err = dec.ReadFloat64()
+		case "float128":
+			var rv Float128
+			err = rv.UnmarshalABI(dec)
+			*v = rv
 		case "varint32":
 			*v, err = dec.ReadVarint32()
 		case "varuint32":
 			*v, err = dec.ReadVaruint32()
-		// TODO: float128, uint128, int128
 		// chain builtins
 		case "asset":
 			var rv Asset

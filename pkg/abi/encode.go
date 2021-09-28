@@ -55,19 +55,14 @@ func (enc *Encoder) Encode(v interface{}) error {
 		err = enc.WriteInt32(v)
 	case int64:
 		err = enc.WriteInt64(v)
-	// TODO: uint128, int128
-
 	case float32:
 		err = enc.WriteFloat32(v)
 	case float64:
 		err = enc.WriteFloat64(v)
-	// TODO: float128
-
 	case int:
 		err = enc.WriteVarint32(int32(v))
 	case uint:
 		err = enc.WriteVaruint32(uint32(v))
-
 	case []byte:
 		err = enc.WriteVaruint32(uint32(len(v)))
 		if err == nil {
@@ -75,11 +70,7 @@ func (enc *Encoder) Encode(v interface{}) error {
 		}
 	// reflection for the rest
 	default:
-		val := reflect.ValueOf(v)
-		// if val.Kind() != reflect.Ptr || val.IsNil() {
-		// 	return fmt.Errorf("abi: invalid type, unable to decode into %s", val.Type())
-		// }
-		err = enc.EncodeValue(val)
+		err = enc.EncodeValue(reflect.ValueOf(v))
 	}
 
 	return err

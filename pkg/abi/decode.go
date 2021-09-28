@@ -65,7 +65,6 @@ func (dec *Decoder) Decode(v interface{}) error {
 		*ptr, err = dec.ReadFloat32()
 	case *float64:
 		*ptr, err = dec.ReadFloat64()
-	// TODO: float128 using big.Float
 
 	// varuints represented using golang's undetermined int and uint types
 	// we can do this because they are distinct types not just aliases to the underlying int type
