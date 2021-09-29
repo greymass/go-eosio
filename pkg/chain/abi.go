@@ -10,13 +10,15 @@ import (
 
 // EOSIO ABI definition, describes the binary representation of a collection of types.
 type Abi struct {
-	Version          string       `json:"version"`
-	Types            []AbiType    `json:"types"`
-	Variants         []AbiVariant `json:"variants"`
-	Structs          []AbiStruct  `json:"structs"`
-	Actions          []AbiAction  `json:"actions"`
-	Tables           []AbiTable   `json:"tables"`
-	RicardianClauses []AbiClause  `json:"ricardian_clauses"`
+	Version          string            `json:"version"`
+	Types            []AbiType         `json:"types"`
+	Structs          []AbiStruct       `json:"structs"`
+	Actions          []AbiAction       `json:"actions"`
+	Tables           []AbiTable        `json:"tables"`
+	RicardianClauses []AbiClause       `json:"ricardian_clauses"`
+	ErrorMessages    []AbiErrorMessage `json:"error_messages,omitempty"`
+	Extensions       []*AbiExtension   `json:"abi_extensions,omitempty"`
+	Variants         []AbiVariant      `json:"variants,omitempty" eosio:"extension"`
 }
 
 type AbiType struct {
@@ -41,13 +43,13 @@ type AbiField struct {
 }
 
 type AbiAction struct {
-	Name              string `json:"name"`
+	Name              Name   `json:"name"`
 	Type              string `json:"type"`
 	RicardianContract string `json:"ricardian_contract"`
 }
 
 type AbiTable struct {
-	Name      string   `json:"name"`
+	Name      Name     `json:"name"`
 	IndexType string   `json:"index_type"`
 	KeyNames  []string `json:"key_names"`
 	KeyTypes  []string `json:"key_types"`
@@ -59,7 +61,17 @@ type AbiClause struct {
 	Body string `json:"body"`
 }
 
-func (a Abi) GetTable(name string) *AbiTable {
+type AbiExtension struct {
+	Type uint16 `json:"type"`
+	Data Bytes  `json:"data"`
+}
+
+type AbiErrorMessage struct {
+	Code    Uint64 `json:"error_code"`
+	Message string `json:"error_msg"`
+}
+
+func (a Abi) GetTable(name Name) *AbiTable {
 	for _, t := range a.Tables {
 		if t.Name == name {
 			return &t
@@ -68,7 +80,7 @@ func (a Abi) GetTable(name string) *AbiTable {
 	return nil
 }
 
-func (a Abi) GetAction(name string) *AbiAction {
+func (a Abi) GetAction(name Name) *AbiAction {
 	for _, t := range a.Actions {
 		if t.Name == name {
 			return &t
@@ -102,6 +114,22 @@ func (a Abi) GetVariant(name string) *AbiVariant {
 		}
 	}
 	return nil
+}
+
+func (a Abi) DecodeAction(r io.Reader, name Name) (interface{}, error) {
+	act := a.GetAction(name)
+	if act == nil {
+		return nil, fmt.Errorf("unknown action %v", name)
+	}
+	return a.Decode(r, act.Type)
+}
+
+func (a Abi) EncodeAction(w io.Writer, name Name, v interface{}) error {
+	act := a.GetAction(name)
+	if act == nil {
+		return fmt.Errorf("unknown action %v", name)
+	}
+	return a.Encode(w, act.Type, v)
 }
 
 func (a Abi) Decode(r io.Reader, name string) (interface{}, error) {

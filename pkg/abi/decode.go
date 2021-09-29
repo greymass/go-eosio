@@ -245,8 +245,10 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 					err = dec.Decode(vi)
 				}
 
-				// TODO: handle binary extensions
-				// extension must be last field of struct and can only exist on the root level
+				if tag == "extension" && err == io.EOF {
+					// TODO: make sure extensions are only last field in a top-level struct
+					continue
+				}
 
 				if err != nil {
 					return err
