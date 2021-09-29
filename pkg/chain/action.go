@@ -1,6 +1,10 @@
 package chain
 
-import "github.com/greymass/go-eosio/pkg/abi"
+import (
+	"bytes"
+
+	"github.com/greymass/go-eosio/pkg/abi"
+)
 
 type PermissionLevel struct {
 	Actor      Name `json:"actor"`
@@ -16,6 +20,15 @@ type Action struct {
 
 func NewAction(account Name, name Name, authorization []PermissionLevel, data Bytes) *Action {
 	return &Action{account, name, authorization, data}
+}
+
+func (a Action) Digest() Checksum256 {
+	b := bytes.NewBuffer(nil)
+	err := a.MarshalABI(NewEncoder(b))
+	if err != nil {
+		panic(err)
+	}
+	return Checksum256Digest(b.Bytes())
 }
 
 // abi.Marshaler conformance
