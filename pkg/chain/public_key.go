@@ -112,7 +112,7 @@ func (pk *PublicKey) UnmarshalABI(d *abi.Decoder) error {
 
 // encoding.TextMarshaler conformance
 
-func (pk *PublicKey) MarshalText() (text []byte, err error) {
+func (pk PublicKey) MarshalText() (text []byte, err error) {
 	return []byte(pk.String()), nil
 }
 

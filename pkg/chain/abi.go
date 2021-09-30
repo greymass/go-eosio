@@ -361,7 +361,7 @@ func (a Abi) encodeInner(enc *abi.Encoder, t *resolvedType, v interface{}) error
 			if vv, ok = v.(Name); ok {
 				err = vv.MarshalABI(enc)
 			}
-		case "publickey":
+		case "public_key":
 			var vv PublicKey
 			if vv, ok = v.(PublicKey); ok {
 				err = vv.MarshalABI(enc)
@@ -420,6 +420,7 @@ func (a Abi) decodeType(dec *abi.Decoder, t *resolvedType, v *interface{}) error
 					return err // can't recover from this
 				}
 			}
+			*v = va
 		}
 	} else {
 		err = a.decodeInner(dec, t, v)
@@ -542,7 +543,7 @@ func (a Abi) decodeInner(dec *abi.Decoder, t *resolvedType, v *interface{}) erro
 			var rv Name
 			err = rv.UnmarshalABI(dec)
 			*v = rv
-		case "publickey":
+		case "public_key":
 			var rv PublicKey
 			err = rv.UnmarshalABI(dec)
 			*v = rv
@@ -610,7 +611,7 @@ func (r *resolver) resolve(name string) *resolvedType {
 	}
 	r.types[name] = &t
 
-	if as := r.abi.GetStruct(name); as != nil {
+	if as := r.abi.GetStruct(baseName); as != nil {
 		t.fields = &[]*struct {
 			name string
 			typ  *resolvedType
@@ -627,13 +628,13 @@ func (r *resolver) resolve(name string) *resolvedType {
 				typ:  r.resolve(f.Type),
 			})
 		}
-	} else if av := r.abi.GetVariant(name); av != nil {
+	} else if av := r.abi.GetVariant(baseName); av != nil {
 		t.variant = &[]*resolvedType{}
 		for _, v := range av.Types {
 			vt := r.resolve(v)
 			*t.variant = append(*t.variant, vt)
 		}
-	} else if at := r.abi.GetType(name); at != nil {
+	} else if at := r.abi.GetType(baseName); at != nil {
 		t.ref = r.resolve(at.Type)
 	}
 

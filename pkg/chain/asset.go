@@ -73,7 +73,7 @@ func (a *Asset) String() string {
 		f := v % a.Symbol.Precision()
 		fs := strconv.Itoa(f)
 		for len(fs) < a.Symbol.Decimals() {
-			fs = fs + "0"
+			fs = "0" + fs
 		}
 		s += "." + fs
 	}

@@ -34,16 +34,12 @@ var tokenAbi = loadAbi(`
             ]
         },
         {
-            "name": "close",
+            "name": "banana",
             "base": "",
             "fields": [
                 {
-                    "name": "owner",
+                    "name": "moo",
                     "type": "name"
-                },
-                {
-                    "name": "symbol",
-                    "type": "symbol"
                 }
             ]
         },
@@ -123,9 +119,9 @@ var tokenAbi = loadAbi(`
                     "name": "extra",
                     "type": "mega"
                 },
-				{
+				        {
                     "name": "extra2",
-                    "type": "extra[]?"
+                    "type": "banana[]"
                 }
             ]
         },
@@ -218,7 +214,9 @@ var transferData = []byte{
 	0x01,
 	// utf8 string "foo"
 	0x03, 0x66, 0x6f, 0x6f,
-	0x00,
+	// extra2 array
+	0x01,                                           // 1 item
+	0x80, 0xb1, 0x91, 0x5e, 0x5d, 0x26, 0x8d, 0xca, // name teamgreymass
 }
 
 func TestAbiDecode(t *testing.T) {
@@ -230,7 +228,9 @@ func TestAbiDecode(t *testing.T) {
 		"quantity": *chain.A("1.0000 EOS"),
 		"memo":     "hello",
 		"extra":    []interface{}{"string", "foo"},
-		"extra2":   nil,
+		"extra2": []interface{}{
+			map[string]interface{}{"moo": chain.N("teamgreymass")},
+		},
 	})
 }
 

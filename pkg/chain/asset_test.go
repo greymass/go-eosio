@@ -47,6 +47,13 @@ func TestAsset(t *testing.T) {
 	assert.Equal(t, asset3.Decimals(), 4)
 	assert.Equal(t, asset3.Precision(), 10000)
 	assert.Equal(t, asset3.String(), "1.0000 EOS")
+
+	asset4, err := chain.NewAssetFromString("34.0303 EOS")
+	assert.NoError(t, err)
+	assert.Equal(t, asset4.Value, int64(340303))
+	assert.Equal(t, asset4.Decimals(), 4)
+	assert.Equal(t, asset4.Precision(), 10000)
+	assert.Equal(t, asset4.String(), "34.0303 EOS")
 }
 
 func BenchmarkAssetFromString(b *testing.B) {
