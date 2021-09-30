@@ -242,7 +242,9 @@ func TestAbiEncode(t *testing.T) {
 		"quantity": *chain.A("1.0000 EOS"),
 		"memo":     "hello",
 		"extra":    []interface{}{"string", "foo"},
-		"extra2":   nil,
+		"extra2": []interface{}{
+			map[string]interface{}{"moo": chain.N("teamgreymass")},
+		},
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, buf.Bytes(), transferData)
