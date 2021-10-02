@@ -123,6 +123,22 @@ func (enc *Encoder) EncodeValue(v reflect.Value) error {
 				return err
 			}
 		}
+	case reflect.Map:
+		l := v.Len()
+		err := enc.WriteVaruint32(uint32(l))
+		if err != nil {
+			return err
+		}
+		for _, key := range v.MapKeys() {
+			if err := enc.Encode(key.Interface()); err != nil {
+				return err
+			}
+			if err := enc.Encode(v.MapIndex(key).Interface()); err != nil {
+				return err
+			}
+		}
+	default:
+		return errors.New("eosio encoder: unexpected type " + v.Type().String())
 	}
 
 	return nil
