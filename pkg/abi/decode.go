@@ -69,22 +69,14 @@ func (dec *Decoder) Decode(v interface{}) error {
 	// varuints represented using golang's undetermined int and uint types
 	// we can do this because they are distinct types not just aliases to the underlying int type
 	case *int:
-		var v int32
-		v, err = dec.ReadVarint32()
-		if err == nil {
-			*ptr = int(v)
-		}
+		*ptr, err = dec.ReadVarint()
 	case *uint:
-		var v uint32
-		v, err = dec.ReadVaruint32()
-		if err == nil {
-			*ptr = uint(v)
-		}
+		*ptr, err = dec.ReadVaruint()
 
 	// variable length bytes, use chain.Bytes or chain.Blob instead to get correct json representations
 	case *[]byte:
-		var len uint32
-		len, err = dec.ReadVaruint32()
+		var len uint
+		len, err = dec.ReadVaruint()
 		if err == nil {
 			_, *ptr, err = dec.ReadBytes(int(len))
 		}
@@ -183,8 +175,8 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 
 	// maps are packed <varuint32 len>[<key><value>, ..]
 	case reflect.Map:
-		var l uint32
-		l, err = dec.ReadVaruint32()
+		var l uint
+		l, err = dec.ReadVaruint()
 		if err == nil {
 			// get type of key and value
 			keyType := pv.Type().Key()
@@ -193,7 +185,7 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 			if pv.IsNil() || pv.Len() != 0 {
 				pv.Set(reflect.MakeMap(pv.Type()))
 			}
-			for i := uint32(0); i < l; i++ {
+			for i := 0; i < int(l); i++ {
 				// read key
 				key := reflect.New(keyType).Elem()
 				err = dec.Decode(key.Addr().Interface())
@@ -259,8 +251,8 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 		}
 
 	case reflect.Slice:
-		var l uint32
-		l, err = dec.ReadVaruint32()
+		var l uint
+		l, err = dec.ReadVaruint()
 		if err == nil {
 			if pv.Len() != int(l) {
 				pv.Set(reflect.MakeSlice(pv.Type(), int(l), int(l)))
@@ -376,7 +368,7 @@ func (dec *Decoder) ReadInt8() (int8, error) {
 }
 
 func (dec *Decoder) ReadString() (string, error) {
-	len, err := dec.ReadVaruint32()
+	len, err := dec.ReadVaruint()
 	if err != nil {
 		return "", err
 	}
@@ -392,20 +384,20 @@ func (dec *Decoder) ReadBool() (bool, error) {
 	return b != 0, err
 }
 
-func (dec *Decoder) ReadVaruint32() (uint32, error) {
+func (dec *Decoder) ReadVaruint() (uint, error) {
 	v, err := binary.ReadUvarint(dec)
 	if err != nil {
 		return 0, err
 	}
-	return uint32(v), nil
+	return uint(v), nil
 }
 
-func (dec *Decoder) ReadVarint32() (int32, error) {
+func (dec *Decoder) ReadVarint() (int, error) {
 	v, err := binary.ReadVarint(dec)
 	if err != nil {
 		return 0, err
 	}
-	return int32(v), nil
+	return int(v), nil
 }
 
 func (dec *Decoder) ReadFloat32() (float32, error) {

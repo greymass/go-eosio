@@ -90,7 +90,7 @@ func (pk *PublicKey) UnmarshalABI(d *abi.Decoder) error {
 		if err != nil {
 			return err
 		}
-		l, err := d.ReadVaruint32() // rpid length
+		l, err := d.ReadVaruint() // rpid length
 		if err != nil {
 			return err
 		}

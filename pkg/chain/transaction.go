@@ -39,7 +39,7 @@ func (txh TransactionHeader) MarshalABI(e *abi.Encoder) error {
 	if err != nil {
 		return err
 	}
-	err = e.WriteVaruint32(uint32(txh.MaxNetUsageWords))
+	err = e.WriteVaruint(uint(txh.MaxNetUsageWords))
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (txh TransactionHeader) MarshalABI(e *abi.Encoder) error {
 	if err != nil {
 		return err
 	}
-	err = e.WriteVaruint32(uint32(txh.DelaySec))
+	err = e.WriteVaruint(uint(txh.DelaySec))
 	return err
 }
 
@@ -67,34 +67,34 @@ func (tx Transaction) MarshalABI(e *abi.Encoder) error {
 	if err != nil {
 		return err
 	}
-	l := uint32(len(tx.ContextFreeActions))
-	err = e.WriteVaruint32(l)
+	l := uint(len(tx.ContextFreeActions))
+	err = e.WriteVaruint(l)
 	if err != nil {
 		return err
 	}
-	for i := uint32(0); i < l; i++ {
+	for i := uint(0); i < l; i++ {
 		err = tx.ContextFreeActions[i].MarshalABI(e)
 		if err != nil {
 			return err
 		}
 	}
-	l = uint32(len(tx.Actions))
-	err = e.WriteVaruint32(l)
+	l = uint(len(tx.Actions))
+	err = e.WriteVaruint(l)
 	if err != nil {
 		return err
 	}
-	for i := uint32(0); i < l; i++ {
+	for i := uint(0); i < l; i++ {
 		err = tx.Actions[i].MarshalABI(e)
 		if err != nil {
 			return err
 		}
 	}
-	l = uint32(len(tx.Extensions))
-	err = e.WriteVaruint32(l)
+	l = uint(len(tx.Extensions))
+	err = e.WriteVaruint(l)
 	if err != nil {
 		return err
 	}
-	for i := uint32(0); i < l; i++ {
+	for i := uint(0); i < l; i++ {
 		err = tx.Extensions[i].MarshalABI(e)
 		if err != nil {
 			return err
@@ -119,9 +119,7 @@ func (txh *TransactionHeader) UnmarshalABI(d *abi.Decoder) error {
 	if err != nil {
 		return err
 	}
-	var net uint32
-	net, err = d.ReadVaruint32()
-	txh.MaxNetUsageWords = uint(net)
+	txh.MaxNetUsageWords, err = d.ReadVaruint()
 	if err != nil {
 		return err
 	}
@@ -129,9 +127,7 @@ func (txh *TransactionHeader) UnmarshalABI(d *abi.Decoder) error {
 	if err != nil {
 		return err
 	}
-	var delay uint32
-	delay, err = d.ReadVaruint32()
-	txh.DelaySec = uint(delay)
+	txh.DelaySec, err = d.ReadVaruint()
 	return err
 }
 
@@ -151,35 +147,35 @@ func (tx *Transaction) UnmarshalABI(d *abi.Decoder) error {
 	if err != nil {
 		return err
 	}
-	var len uint32
-	len, err = d.ReadVaruint32()
+	var len uint
+	len, err = d.ReadVaruint()
 	if err != nil {
 		return err
 	}
 	tx.ContextFreeActions = make([]Action, len)
-	for i := uint32(0); i < len; i++ {
+	for i := 0; i < int(len); i++ {
 		err = tx.ContextFreeActions[i].UnmarshalABI(d)
 		if err != nil {
 			return err
 		}
 	}
-	len, err = d.ReadVaruint32()
+	len, err = d.ReadVaruint()
 	if err != nil {
 		return err
 	}
 	tx.Actions = make([]Action, len)
-	for i := uint32(0); i < len; i++ {
+	for i := 0; i < int(len); i++ {
 		err = tx.Actions[i].UnmarshalABI(d)
 		if err != nil {
 			return err
 		}
 	}
-	len, err = d.ReadVaruint32()
+	len, err = d.ReadVaruint()
 	if err != nil {
 		return err
 	}
 	tx.Extensions = make([]TransactionExtension, len)
-	for i := uint32(0); i < len; i++ {
+	for i := 0; i < int(len); i++ {
 		err = tx.Extensions[i].UnmarshalABI(d)
 		if err != nil {
 			return err

@@ -74,7 +74,7 @@ func (s *Signature) UnmarshalABI(d *abi.Decoder) error {
 		if err != nil {
 			return err
 		}
-		al, err := d.ReadVaruint32() // auth_data len
+		al, err := d.ReadVaruint() // auth_data len
 		if err != nil {
 			return err
 		}
@@ -82,7 +82,7 @@ func (s *Signature) UnmarshalABI(d *abi.Decoder) error {
 		if err != nil {
 			return err
 		}
-		cl, err := d.ReadVaruint32() // client_json len
+		cl, err := d.ReadVaruint() // client_json len
 		if err != nil {
 			return err
 		}

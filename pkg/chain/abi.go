@@ -164,7 +164,7 @@ func (a Abi) encodeType(enc *abi.Encoder, t *resolvedType, v interface{}) error 
 		if !ok {
 			return fmt.Errorf("expected slice, found %v", reflect.TypeOf(v))
 		}
-		err := enc.WriteVaruint32(uint32(len(va)))
+		err := enc.WriteVaruint(uint(len(va)))
 		if err != nil {
 			return err
 		}
@@ -219,7 +219,7 @@ func (a Abi) encodeInner(enc *abi.Encoder, t *resolvedType, v interface{}) error
 		if tv == nil {
 			return fmt.Errorf("unknown variant %v", vn)
 		}
-		err = enc.WriteVaruint32(uint32(ti))
+		err = enc.WriteVaruint(uint(ti))
 		if err == nil {
 			err = a.encodeType(enc, tv, va[1])
 		}
@@ -306,14 +306,14 @@ func (a Abi) encodeInner(enc *abi.Encoder, t *resolvedType, v interface{}) error
 				err = vv.MarshalABI(enc)
 			}
 		case "varuint32":
-			var vv uint32
-			if vv, ok = v.(uint32); ok {
-				err = enc.WriteVaruint32(vv)
+			var vv uint
+			if vv, ok = v.(uint); ok {
+				err = enc.WriteVaruint(vv)
 			}
 		case "varint32":
-			var vv int32
-			if vv, ok = v.(int32); ok {
-				err = enc.WriteVarint32(vv)
+			var vv int
+			if vv, ok = v.(int); ok {
+				err = enc.WriteVarint(vv)
 			}
 		case "bytes":
 			var vv []byte
@@ -410,11 +410,11 @@ func (a Abi) decodeType(dec *abi.Decoder, t *resolvedType, v *interface{}) error
 		}
 	}
 	if t.isArray {
-		var l uint32
-		l, err = dec.ReadVaruint32()
+		var l uint
+		l, err = dec.ReadVaruint()
 		if err == nil {
 			va := make([]interface{}, l)
-			for i := uint32(0); i < l; i++ {
+			for i := 0; i < int(l); i++ {
 				err = a.decodeInner(dec, t, &va[i])
 				if err != nil {
 					return err // can't recover from this
@@ -449,12 +449,12 @@ func (a Abi) decodeInner(dec *abi.Decoder, t *resolvedType, v *interface{}) erro
 		*v = vs
 
 	} else if variant := t.variant; variant != nil {
-		var idx uint32
-		idx, err = dec.ReadVaruint32()
+		var idx uint
+		idx, err = dec.ReadVaruint()
 		if err != nil {
 			return err
 		}
-		if idx >= uint32(len(*variant)) {
+		if int(idx) >= len(*variant) {
 			return fmt.Errorf("invalid variant index %d, expected max %d", idx, len(*variant))
 		}
 		tv := (*variant)[idx]
@@ -507,9 +507,9 @@ func (a Abi) decodeInner(dec *abi.Decoder, t *resolvedType, v *interface{}) erro
 			err = rv.UnmarshalABI(dec)
 			*v = rv
 		case "varint32":
-			*v, err = dec.ReadVarint32()
+			*v, err = dec.ReadVarint()
 		case "varuint32":
-			*v, err = dec.ReadVaruint32()
+			*v, err = dec.ReadVaruint()
 		// chain builtins
 		case "asset":
 			var rv Asset

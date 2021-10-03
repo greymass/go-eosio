@@ -60,11 +60,11 @@ func (enc *Encoder) Encode(v interface{}) error {
 	case float64:
 		err = enc.WriteFloat64(v)
 	case int:
-		err = enc.WriteVarint32(int32(v))
+		err = enc.WriteVarint(v)
 	case uint:
-		err = enc.WriteVaruint32(uint32(v))
+		err = enc.WriteVaruint(v)
 	case []byte:
-		err = enc.WriteVaruint32(uint32(len(v)))
+		err = enc.WriteVaruint(uint(len(v)))
 		if err == nil {
 			err = enc.WriteBytes(v)
 		}
@@ -93,7 +93,7 @@ func (enc *Encoder) EncodeValue(v reflect.Value) error {
 
 	case reflect.Slice:
 		l := v.Len()
-		err := enc.WriteVaruint32(uint32(l))
+		err := enc.WriteVaruint(uint(l))
 		if err != nil {
 			return err
 		}
@@ -125,7 +125,7 @@ func (enc *Encoder) EncodeValue(v reflect.Value) error {
 		}
 	case reflect.Map:
 		l := v.Len()
-		err := enc.WriteVaruint32(uint32(l))
+		err := enc.WriteVaruint(uint(l))
 		if err != nil {
 			return err
 		}
@@ -206,20 +206,20 @@ func (enc *Encoder) WriteInt64(v int64) error {
 	return enc.WriteBytes(b[:])
 }
 
-func (enc *Encoder) WriteVaruint32(v uint32) error {
+func (enc *Encoder) WriteVaruint(v uint) error {
 	var b [4]byte
 	l := binary.PutUvarint(b[:], uint64(v))
 	return enc.WriteBytes(b[:l])
 }
 
-func (enc *Encoder) WriteVarint32(v int32) error {
+func (enc *Encoder) WriteVarint(v int) error {
 	var b [4]byte
 	l := binary.PutVarint(b[:], int64(v))
 	return enc.WriteBytes(b[:l])
 }
 
 func (enc *Encoder) WriteString(v string) error {
-	err := enc.WriteVaruint32(uint32(len(v)))
+	err := enc.WriteVaruint(uint(len(v)))
 	if err != nil {
 		return err
 	}

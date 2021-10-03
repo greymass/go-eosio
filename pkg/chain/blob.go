@@ -19,8 +19,8 @@ func (b Blob) Base64() string {
 
 func (b Blob) MarshalABI(e *abi.Encoder) error {
 	var err error
-	l := uint32(len(b))
-	err = e.WriteVaruint32(l)
+	l := uint(len(b))
+	err = e.WriteVaruint(l)
 	if err == nil {
 		err = e.WriteBytes(b)
 	}
@@ -30,7 +30,7 @@ func (b Blob) MarshalABI(e *abi.Encoder) error {
 // abi.Unmarshaler conformance
 
 func (b *Blob) UnmarshalABI(d *abi.Decoder) error {
-	l, err := d.ReadVaruint32()
+	l, err := d.ReadVaruint()
 	if err != nil {
 		return err
 	}

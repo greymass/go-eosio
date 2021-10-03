@@ -59,8 +59,8 @@ func (a Action) MarshalABI(e *abi.Encoder) error {
 	var err error
 	a.Account.MarshalABI(e)
 	a.Name.MarshalABI(e)
-	l := uint32(len(a.Authorization))
-	err = e.WriteVaruint32(l)
+	l := uint(len(a.Authorization))
+	err = e.WriteVaruint(l)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (pl *PermissionLevel) UnmarshalABI(d *abi.Decoder) error {
 func (a *Action) UnmarshalABI(d *abi.Decoder) error {
 	a.Account.UnmarshalABI(d)
 	a.Name.UnmarshalABI(d)
-	l, err := d.ReadVaruint32()
+	l, err := d.ReadVaruint()
 	if err != nil {
 		return err
 	}
