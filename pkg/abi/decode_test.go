@@ -349,3 +349,94 @@ func TestFloat64(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, float64(3.141592653589793), f)
 }
+
+func TestReuse(t *testing.T) {
+	type tst struct {
+		A uint64
+		B *string
+		C []byte
+		D map[byte]byte
+		E [3]int
+		F struct {
+			FA int16
+			FB uint16
+		}
+		G *tst   `eosio:"optional"`
+		H uint64 `eosio:"optional"`
+	}
+
+	str := "hello world"
+
+	v1 := tst{
+		A: 14595364149838066048,
+		B: &str,
+		C: []byte{1, 2, 3},
+		D: map[byte]byte{1: 10, 2: 20, 3: 30},
+		E: [3]int{1, 2, 3},
+		F: struct {
+			FA int16
+			FB uint16
+		}{
+			FA: -1,
+			FB: 2,
+		},
+		G: &tst{
+			A: 4242,
+			B: &str,
+			C: []byte{44, 55, 66},
+			D: map[byte]byte{2: 22, 3: 33, 4: 44},
+			E: [3]int{9, 9, 2},
+			F: struct {
+				FA int16
+				FB uint16
+			}{
+				FA: 222,
+				FB: 0,
+			},
+		},
+		H: 22,
+	}
+
+	v1b := bytes.NewBuffer(nil)
+	err := abi.NewEncoder(v1b, noopEncodefunc).Encode(v1)
+	assert.NoError(t, err)
+
+	str2 := "goodbye"
+
+	v2 := tst{
+		A: 5555,
+		B: &str2,
+		C: []byte{2},
+		D: map[byte]byte{99: 255},
+		E: [3]int{55, 55, 55},
+		F: struct {
+			FA int16
+			FB uint16
+		}{
+			FA: -2,
+			FB: 42,
+		},
+	}
+
+	v2b := bytes.NewBuffer(nil)
+	err = abi.NewEncoder(v2b, noopEncodefunc).Encode(v2)
+	assert.NoError(t, err)
+
+	var vr tst
+
+	err = testDecoder(v1b.Bytes()).Decode(&vr)
+	assert.NoError(t, err)
+	assert.Equal(t, vr, v1)
+	assert.True(t, vr.G != nil)
+	assert.Equal(t, len(vr.C), 3)
+
+	err = testDecoder(v2b.Bytes()).Decode(&vr)
+	assert.NoError(t, err)
+	assert.Equal(t, vr, v2)
+	assert.True(t, vr.G == nil)
+	assert.Equal(t, len(vr.C), 1)
+
+	err = testDecoder(v1b.Bytes()).Decode(&vr)
+	assert.NoError(t, err)
+	assert.Equal(t, vr, v1)
+}

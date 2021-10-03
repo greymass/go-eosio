@@ -112,7 +112,7 @@ func (enc *Encoder) EncodeValue(v reflect.Value) error {
 		for i := 0; i < v.NumField(); i++ {
 			tag := v.Type().Field(i).Tag.Get("eosio")
 			if tag == "optional" {
-				exists := !v.Field(i).IsNil()
+				exists := !v.Field(i).IsZero()
 				enc.WriteBool(exists)
 				if !exists {
 					continue

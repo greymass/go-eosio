@@ -235,6 +235,7 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 						return err
 					}
 					if !exists {
+						pv.Set(reflect.Zero(pv.Type()))
 						continue
 					}
 				}
@@ -247,6 +248,7 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 
 				if tag == "extension" && err == io.EOF {
 					// TODO: make sure extensions are only last field in a top-level struct
+					pv.Set(reflect.Zero(pv.Type()))
 					continue
 				}
 
@@ -260,7 +262,9 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 		var l uint32
 		l, err = dec.ReadVaruint32()
 		if err == nil {
-			pv.Set(reflect.MakeSlice(pv.Type(), int(l), int(l)))
+			if pv.Len() != int(l) {
+				pv.Set(reflect.MakeSlice(pv.Type(), int(l), int(l)))
+			}
 			for i := 0; i < int(l); i++ {
 				pv := pv.Index(i)
 				if pv.Kind() == reflect.Ptr {
