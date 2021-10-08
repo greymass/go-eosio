@@ -140,6 +140,10 @@ func (f128 Float128) MarshalABI(e *abi.Encoder) error {
 	return e.WriteBytes(f128.Data[:])
 }
 
+func (u64 Uint64) MarshalABI(e *abi.Encoder) error {
+	return e.WriteUint64(uint64(u64))
+}
+
 func (bn BlockNum) MarshalABI(e *abi.Encoder) error {
 	return e.WriteUint32(uint32(bn))
 }
@@ -166,6 +170,14 @@ func (f128 *Float128) UnmarshalABI(d *abi.Decoder) error {
 	_, b, err := d.ReadBytes(16)
 	if err == nil {
 		copy(f128.Data[:], b)
+	}
+	return err
+}
+
+func (u64 *Uint64) UnmarshalABI(d *abi.Decoder) error {
+	v, err := d.ReadUint64()
+	if err == nil {
+		*u64 = Uint64(v)
 	}
 	return err
 }

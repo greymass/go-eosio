@@ -31,6 +31,10 @@ func chainDecoder(dec *abi.Decoder, v interface{}) (done bool, err error) {
 		err = v.UnmarshalABI(dec)
 	case *Checksum512:
 		err = v.UnmarshalABI(dec)
+	case *Float128:
+		err = v.UnmarshalABI(dec)
+	case *Int128:
+		err = v.UnmarshalABI(dec)
 	case *Name:
 		err = v.UnmarshalABI(dec)
 	case *PermissionLevel:
@@ -52,6 +56,10 @@ func chainDecoder(dec *abi.Decoder, v interface{}) (done bool, err error) {
 	case *TransactionExtension:
 		err = v.UnmarshalABI(dec)
 	case *TransactionHeader:
+		err = v.UnmarshalABI(dec)
+	case *Uint128:
+		err = v.UnmarshalABI(dec)
+	case *Uint64:
 		err = v.UnmarshalABI(dec)
 	default:
 		done = false
@@ -80,6 +88,10 @@ func chainEncoder(enc *abi.Encoder, v interface{}) (done bool, err error) {
 		err = v.MarshalABI(enc)
 	case Checksum512:
 		err = v.MarshalABI(enc)
+	case Float128:
+		err = v.MarshalABI(enc)
+	case Int128:
+		err = v.MarshalABI(enc)
 	case Name:
 		err = v.MarshalABI(enc)
 	case PermissionLevel:
@@ -101,6 +113,10 @@ func chainEncoder(enc *abi.Encoder, v interface{}) (done bool, err error) {
 	case TransactionExtension:
 		err = v.MarshalABI(enc)
 	case TransactionHeader:
+		err = v.MarshalABI(enc)
+	case Uint128:
+		err = v.MarshalABI(enc)
+	case Uint64:
 		err = v.MarshalABI(enc)
 	default:
 		done = false
