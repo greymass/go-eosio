@@ -19,6 +19,8 @@ func chainDecoder(dec *abi.Decoder, v interface{}) (done bool, err error) {
 		err = v.UnmarshalABI(dec)
 	case *Blob:
 		err = v.UnmarshalABI(dec)
+	case *BlockNum:
+		err = v.UnmarshalABI(dec)
 	case *BlockTimestamp:
 		err = v.UnmarshalABI(dec)
 	case *Bytes:
@@ -65,6 +67,8 @@ func chainEncoder(enc *abi.Encoder, v interface{}) (done bool, err error) {
 	case Asset:
 		err = v.MarshalABI(enc)
 	case Blob:
+		err = v.MarshalABI(enc)
+	case BlockNum:
 		err = v.MarshalABI(enc)
 	case BlockTimestamp:
 		err = v.MarshalABI(enc)

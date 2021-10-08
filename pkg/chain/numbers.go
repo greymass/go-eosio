@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	"strconv"
@@ -24,6 +25,13 @@ type Float128 struct {
 
 // uint64 alias that encodes to string for values above 32bit instead of scientific notation in JSON
 type Uint64 uint64
+
+// Type representing a block number, EOSIO chains are only expected to live for 68 years, sorry kids!
+type BlockNum uint32
+
+func (bn BlockNum) String() string {
+	return fmt.Sprintf("%010d", bn)
+}
 
 // Create new Uint128 from big.Int, panics if big.Int is too large.
 func NewUint128(i *big.Int) Uint128 {
@@ -132,6 +140,10 @@ func (f128 Float128) MarshalABI(e *abi.Encoder) error {
 	return e.WriteBytes(f128.Data[:])
 }
 
+func (bn BlockNum) MarshalABI(e *abi.Encoder) error {
+	return e.WriteUint32(uint32(bn))
+}
+
 // abi.Unmarshaler conformance
 
 func (u128 *Uint128) UnmarshalABI(d *abi.Decoder) error {
@@ -154,6 +166,14 @@ func (f128 *Float128) UnmarshalABI(d *abi.Decoder) error {
 	_, b, err := d.ReadBytes(16)
 	if err == nil {
 		copy(f128.Data[:], b)
+	}
+	return err
+}
+
+func (bn *BlockNum) UnmarshalABI(d *abi.Decoder) error {
+	v, err := d.ReadUint32()
+	if err == nil {
+		*bn = BlockNum(v)
 	}
 	return err
 }
@@ -197,23 +217,48 @@ func (f128 *Float128) UnmarshalText(text []byte) error {
 // json.Marshaler conformance
 
 func (u64 Uint64) MarshalJSON() ([]byte, error) {
-	s := strconv.FormatUint(uint64(u64), 10)
-	if u64 > math.MaxUint32 {
-		s = `"` + s + `"`
-	}
-	return []byte(s), nil
+	return writeUintJSON(uint64(u64)), nil
+}
+
+func (bn BlockNum) MarshalJSON() ([]byte, error) {
+	return writeUintJSON(uint64(bn)), nil
 }
 
 // json.Unmarshaler conformance
 
 func (u64 *Uint64) UnmarshalJSON(b []byte) error {
+	v, err := readUintJSON(b)
+	if err == nil {
+		*u64 = Uint64(v)
+	}
+	return err
+}
+
+func (bn *BlockNum) UnmarshalJSON(b []byte) error {
+	v, err := readUintJSON(b)
+	if v > math.MaxUint32 {
+		return fmt.Errorf("block number %d is too large", v)
+	}
+	if err == nil {
+		*bn = BlockNum(v)
+	}
+	return err
+}
+
+// json helpers
+
+func readUintJSON(b []byte) (uint64, error) {
 	s := string(b)
 	if len(s) > 1 && s[0] == '"' && s[len(s)-1] == '"' {
 		s = s[1 : len(s)-1]
 	}
-	i, err := strconv.ParseUint(s, 10, 64)
-	if err == nil {
-		*u64 = Uint64(i)
+	return strconv.ParseUint(s, 10, 64)
+}
+
+func writeUintJSON(v uint64) []byte {
+	s := strconv.FormatUint(v, 10)
+	if v > math.MaxUint32 {
+		s = `"` + s + `"`
 	}
-	return err
+	return []byte(s)
 }

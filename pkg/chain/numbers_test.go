@@ -1,6 +1,7 @@
 package chain_test
 
 import (
+	"math"
 	"math/big"
 	"testing"
 
@@ -123,4 +124,13 @@ func TestFloat128(t *testing.T) {
 		Data: [16]byte{0x12, 0x34, 0x56, 0x78, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0xab, 0xcd, 0xef, 0x12, 0x34},
 	}
 	assert.JSONCoding(t, f2, `"12345678abcdef12345678abcdef1234"`)
+}
+
+func TestBlockNum(t *testing.T) {
+	bn := chain.BlockNum(0)
+	assert.JSONCoding(t, bn, `0`)
+	assert.Equal(t, bn.String(), "0000000000")
+	bn = chain.BlockNum(math.MaxUint32)
+	assert.JSONCoding(t, bn, `4294967295`)
+	assert.Equal(t, bn.String(), "4294967295")
 }
