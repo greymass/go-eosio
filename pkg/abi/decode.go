@@ -272,6 +272,35 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 				}
 			}
 		}
+
+	case reflect.Uint64:
+		var rv uint64
+		rv, err = dec.ReadUint64()
+		if err == nil {
+			pv.SetUint(rv)
+		}
+
+	case reflect.Uint32:
+		var rv uint32
+		rv, err = dec.ReadUint32()
+		if err == nil {
+			pv.SetUint(uint64(rv))
+		}
+
+	case reflect.Int64:
+		var rv int64
+		rv, err = dec.ReadInt64()
+		if err == nil {
+			pv.SetInt(rv)
+		}
+
+	case reflect.Int32:
+		var rv int32
+		rv, err = dec.ReadInt32()
+		if err == nil {
+			pv.SetInt(int64(rv))
+		}
+
 	default:
 		return fmt.Errorf("abi: unsupported type: %s %s", pv.Type(), pv.Kind())
 	}

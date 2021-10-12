@@ -137,6 +137,16 @@ func (enc *Encoder) EncodeValue(v reflect.Value) error {
 				return err
 			}
 		}
+
+	case reflect.Uint64:
+		return enc.WriteUint64(v.Uint())
+	case reflect.Uint32:
+		return enc.WriteUint32(uint32(v.Uint()))
+	case reflect.Int64:
+		return enc.WriteInt64(v.Int())
+	case reflect.Int32:
+		return enc.WriteInt32(int32(v.Int()))
+
 	default:
 		return errors.New("eosio encoder: unexpected type " + v.Type().String())
 	}
