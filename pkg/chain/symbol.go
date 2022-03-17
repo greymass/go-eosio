@@ -141,6 +141,9 @@ func rawSymbolValue(precision uint8, s string) (uint64, error) {
 	if precision > 18 {
 		return 0, errors.New("invalid symbol precision")
 	}
+	if len(s) > 7 {
+		return 0, errors.New("invalid symbol name")
+	}
 	var rv uint64 = 0
 	for i := 0; i < len(s); i++ {
 		if !(s[i] >= 'A' && s[i] <= 'Z') {

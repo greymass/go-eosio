@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+name: Fuzz
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.18.x]
+    runs-on: ubuntu-latest
+    name: Go ${{ matrix.go-version }}
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: 'Fuzz: Name'
+        run: go test ./pkg/chain/name_test.go -fuzz=Fuzz -fuzztime=30s
+      - name: 'Fuzz: Asset'
+        run: go test ./pkg/chain/asset_test.go -fuzz=Fuzz -fuzztime=30s

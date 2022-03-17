@@ -1,6 +1,8 @@
 package chain_test
 
 import (
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/greymass/go-eosio/internal/assert"
@@ -54,6 +56,49 @@ func TestAsset(t *testing.T) {
 	assert.Equal(t, asset4.Decimals(), 4)
 	assert.Equal(t, asset4.Precision(), 10000)
 	assert.Equal(t, asset4.String(), "34.0303 EOS")
+
+	asset5, err := chain.NewAssetFromString("1.123456789012345678 ABCDEFG")
+	assert.NoError(t, err)
+	assert.Equal(t, asset5.Value, int64(1123456789012345678))
+	assert.Equal(t, asset5.Decimals(), 18)
+	assert.Equal(t, asset5.Precision(), 1000000000000000000)
+	assert.Equal(t, asset5.String(), "1.123456789012345678 ABCDEFG")
+}
+
+func FuzzAsset(f *testing.F) {
+	f.Add("1.0000 EOS")
+	f.Add("34.0303 EOS")
+	f.Add("-1.234567890 TEST")
+	f.Add("0.42 BONK")
+	f.Add("1.0042 EOS")
+	f.Add("1.00000042 LONG")
+	f.Add("1.123456789012345678 ABCDEFG")
+	f.Fuzz(func(t *testing.T, orig string) {
+		asset, error := chain.NewAssetFromString(orig)
+		if error != nil {
+			return
+		}
+		t.Logf("%s: %q float=%f symbol=%s", orig, asset.String(), asset.FloatValue(), asset.Symbol.String())
+		parts := strings.Split(orig, " ")
+		if asset.Symbol.Name() != parts[1] {
+			t.Errorf("symbol name mismatch, expected %s, got %s", parts[1], asset.Symbol.Name())
+		}
+		numParts := strings.Split(parts[0], ".")
+		if len(numParts) == 2 {
+			if len(numParts[1]) != asset.Symbol.Decimals() {
+				t.Errorf("decimals mismatch, expected %d, got %d", asset.Symbol.Decimals(), len(numParts[1]))
+			}
+		} else if asset.Symbol.Decimals() != 0 {
+			t.Errorf("decimals mismatch, expected 0 got %d", asset.Symbol.Decimals())
+		}
+		floatVal, err := strconv.ParseFloat(parts[0], 64)
+		if err != nil {
+			t.Error(err)
+		}
+		if floatVal != asset.FloatValue() {
+			t.Errorf("%.18f != %.18f", floatVal, asset.FloatValue())
+		}
+	})
 }
 
 func BenchmarkAssetFromString(b *testing.B) {

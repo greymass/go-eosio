@@ -9,6 +9,8 @@ import (
 	"github.com/greymass/go-eosio/pkg/abi"
 )
 
+var ErrInvalidAssetString = errors.New("invalid asset string")
+
 type Asset struct {
 	Value int64
 	Symbol
@@ -27,21 +29,40 @@ func NewAsset(value int64, symbol Symbol) *Asset {
 // Create new asset from string, e.g. "1.0000 EOS"
 func NewAssetFromString(s string) (*Asset, error) {
 	p := strings.Split(s, " ")
-	if len(p) != 2 {
-		return nil, errors.New("invalid asset string")
+	if len(p) != 2 || p[0] == "" || p[1] == "" {
+		return nil, ErrInvalidAssetString
 	}
-	vp := strings.Split(p[0], ".")
+	var foundPoint bool = false
 	var precision uint8 = 0
-	if len(vp) == 2 {
-		precision = uint8(len(vp[1]))
+	var builder = strings.Builder{}
+	for i, c := range p[0] {
+		if c == '.' {
+			if foundPoint {
+				return nil, ErrInvalidAssetString
+			}
+			foundPoint = true
+			continue
+		}
+		builder.WriteRune(c)
+		if c == '-' && i == 0 {
+			continue
+		}
+		if foundPoint {
+			precision++
+			if precision > 18 {
+				return nil, ErrInvalidAssetString
+			}
+		}
+		if c >= '0' && c <= '9' {
+			continue
+		}
+		return nil, ErrInvalidAssetString
 	}
-	units, err := strconv.ParseInt(strings.Replace(p[0], ".", "", 1), 10, 64)
+	units, err := strconv.ParseInt(builder.String(), 10, 64)
 	if err != nil {
 		return nil, err
 	}
-
 	symbol, err := NewSymbol(precision, p[1])
-
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +99,16 @@ func (a *Asset) String() string {
 		s += "." + fs
 	}
 	return s + " " + a.Symbol.Name()
+}
+
+func (a *Asset) FloatValue() float64 {
+	// TODO: do this without the string round-trip
+	// the naive version of float64(Value) / float64(Precision()) leads to rounding errors
+	rv, err := strconv.ParseFloat(strings.Split(a.String(), " ")[0], 64)
+	if err != nil {
+		panic(err)
+	}
+	return rv
 }
 
 // abi.Marshaler conformance
