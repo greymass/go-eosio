@@ -20,4 +20,7 @@ func TestTime(t *testing.T) {
 	assert.ABICoding(t, chain.BlockTimestamp(1145145361), []byte{0x11, 0x88, 0x41, 0x44})
 	assert.JSONCoding(t, chain.BlockTimestamp(1145145361), `"2018-02-21T23:58:00.500"`)
 	assert.JSONCoding(t, chain.BlockTimestamp(1145145362), `"2018-02-21T23:58:01.000"`)
+	tp, err = chain.NewTimePointFromString("2018-02-21T23:58:00.000Z")
+	assert.NoError(t, err)
+	assert.Equal(t, tp, chain.TimePoint(1519257480000000))
 }
