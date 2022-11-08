@@ -33,6 +33,9 @@ func NewBlockTimestamp(t time.Time) BlockTimestamp {
 }
 
 func NewTimePointFromString(s string) (TimePoint, error) {
+	if len(s) > 0 && s[len(s)-1] == 'Z' {
+		s = s[:len(s)-1]
+	}
 	t, err := time.Parse(TimePointFormat, s)
 	if err != nil {
 		return 0, err
@@ -41,6 +44,9 @@ func NewTimePointFromString(s string) (TimePoint, error) {
 }
 
 func NewTimePointSecFromString(s string) (TimePointSec, error) {
+	if len(s) > 0 && s[len(s)-1] == 'Z' {
+		s = s[:len(s)-1]
+	}
 	t, err := time.Parse(TimePointSecFormat, s)
 	if err != nil {
 		return 0, err
@@ -49,6 +55,9 @@ func NewTimePointSecFromString(s string) (TimePointSec, error) {
 }
 
 func NewBlockTimestampFromString(s string) (BlockTimestamp, error) {
+	if len(s) > 0 && s[len(s)-1] == 'Z' {
+		s = s[:len(s)-1]
+	}
 	t, err := time.Parse(TimePointFormat, s)
 	if err != nil {
 		return 0, err
