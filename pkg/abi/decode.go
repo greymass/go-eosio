@@ -26,6 +26,29 @@ func NewDecoder(r io.Reader, fn DecodeFunc) *Decoder {
 	return &Decoder{r: r, fn: fn}
 }
 
+// hasRemaining checks if there is any data remaining in the reader.
+// This is used for extension fields (may_not_exist in C++) which should
+// only be decoded if there is remaining data.
+func (dec *Decoder) hasRemaining() bool {
+	// Check if reader has a Len() method (like bytes.Reader)
+	if lr, ok := dec.r.(interface{ Len() int }); ok {
+		return lr.Len() > 0
+	}
+	// For other readers, try to peek by reading one byte
+	// This requires the reader to also implement io.Seeker or UnreadByte
+	if br, ok := dec.r.(io.ByteScanner); ok {
+		b, err := br.ReadByte()
+		if err != nil {
+			return false
+		}
+		br.UnreadByte()
+		_ = b
+		return true
+	}
+	// If we can't determine, assume there's data (will get error on decode)
+	return true
+}
+
 // Decode into given value.
 func (dec *Decoder) Decode(v interface{}) error {
 	var err error
@@ -232,16 +255,18 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 					}
 				}
 
+				// For extension fields (may_not_exist in C++), check if there's
+				// remaining data before attempting to decode. If no data remains,
+				// set the field to its zero value and continue.
+				if tag == "extension" && !dec.hasRemaining() {
+					pv.Set(reflect.Zero(pv.Type()))
+					continue
+				}
+
 				if tag == "variant" {
 					err = dec.DecodeVariant(vi)
 				} else {
 					err = dec.Decode(vi)
-				}
-
-				if tag == "extension" && err == io.EOF {
-					// TODO: make sure extensions are only last field in a top-level struct
-					pv.Set(reflect.Zero(pv.Type()))
-					continue
 				}
 
 				if err != nil {
