@@ -2,10 +2,12 @@ package abi_test
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/greymass/go-eosio/internal/assert"
 	"github.com/greymass/go-eosio/pkg/abi"
+	"github.com/greymass/go-eosio/pkg/chain"
 )
 
 func testDecoder(data []byte) *abi.Decoder {
@@ -439,4 +441,55 @@ func TestReuse(t *testing.T) {
 	err = testDecoder(v1b.Bytes()).Decode(&vr)
 	assert.NoError(t, err)
 	assert.Equal(t, vr, v1)
+}
+
+func TestDecodeCorruptABI(t *testing.T) {
+	data, err := os.ReadFile("testdata/hashlog.abi.bin")
+	if err != nil {
+		t.Skipf("test data not available: %v", err)
+	}
+
+	reader := bytes.NewReader(data)
+	decoder := chain.NewDecoder(reader)
+
+	var abiStruct chain.Abi
+	err = decoder.Decode(&abiStruct)
+	if err == nil {
+		t.Fatal("expected error for malformed ABI data, got nil")
+	}
+	t.Logf("Got expected error: %v", err)
+}
+
+func TestReadBytesOversizedLength(t *testing.T) {
+	data := []byte{
+		0x80, 0x80, 0x80, 0x80, 0x80, 0x20,
+	}
+	decoder := testDecoder(data)
+
+	var s string
+	err := decoder.Decode(&s)
+
+	if err == nil {
+		t.Fatal("expected error for oversized length, got nil")
+	}
+	t.Logf("Got expected error: %v", err)
+}
+
+func TestReadBytesExceedsBuffer(t *testing.T) {
+	data := []byte{
+		0x0a,
+		0x01, 0x02, 0x03,
+	}
+	decoder := testDecoder(data)
+
+	var s string
+	err := decoder.Decode(&s)
+
+	if err == nil {
+		t.Fatal("expected error when length exceeds available data, got nil")
+	}
+	expected := "abi: read length 10 exceeds available data (3 bytes remaining)"
+	if err.Error() != expected {
+		t.Errorf("expected error %q, got %q", expected, err.Error())
+	}
 }

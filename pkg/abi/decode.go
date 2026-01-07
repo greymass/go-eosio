@@ -341,6 +341,11 @@ func (dec *Decoder) ReadBytes(n int) (an int, b []byte, err error) {
 	if n == 0 {
 		return 0, []byte{}, nil
 	}
+	if lr, ok := dec.r.(interface{ Len() int }); ok {
+		if n > lr.Len() {
+			return 0, nil, fmt.Errorf("abi: read length %d exceeds available data (%d bytes remaining)", n, lr.Len())
+		}
+	}
 	b = make([]byte, n)
 	an, err = io.ReadFull(dec.r, b)
 	if err != nil {
