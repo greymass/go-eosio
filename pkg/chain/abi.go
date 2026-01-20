@@ -597,7 +597,7 @@ func (r *resolver) resolve(name string) *resolvedType {
 		baseName = baseName[:len(baseName)-1]
 	}
 	var isArray bool
-	if baseName[len(baseName)-2] == '[' && baseName[len(baseName)-1] == ']' {
+	if len(baseName) >= 2 && baseName[len(baseName)-2] == '[' && baseName[len(baseName)-1] == ']' {
 		isArray = true
 		baseName = baseName[:len(baseName)-2]
 	}
