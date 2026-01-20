@@ -274,3 +274,50 @@ func TestAbiDecodeVersion10(t *testing.T) {
 	assert.Equal(t, len(decoded.Actions), 14)
 	assert.Equal(t, len(decoded.Variants), 0)
 }
+
+var extensionAbi = loadAbi(`{
+	"version": "eosio::abi/1.1",
+	"structs": [{
+		"name": "setabi",
+		"base": "",
+		"fields": [
+			{"name": "account", "type": "name"},
+			{"name": "abi", "type": "bytes"},
+			{"name": "memo", "type": "string$"}
+		]
+	}],
+	"actions": [{"name": "setabi", "type": "setabi", "ricardian_contract": ""}]
+}`)
+
+func TestAbiDecodeExtensionFieldAbsent(t *testing.T) {
+	hexData := "0000000000ea305504deadbeef"
+	data, err := hex.DecodeString(hexData)
+	assert.NoError(t, err)
+
+	reader := bytes.NewReader(data)
+	decoded, err := extensionAbi.Decode(reader, "setabi")
+
+	assert.NoError(t, err)
+	result := decoded.(map[string]interface{})
+	assert.Equal(t, result["account"], chain.N("eosio"))
+	assert.Equal(t, result["abi"], chain.Bytes{0xde, 0xad, 0xbe, 0xef})
+	_, hasMemo := result["memo"]
+	if hasMemo && result["memo"] != nil && result["memo"] != "" {
+		t.Errorf("expected memo to be absent or empty, got %v", result["memo"])
+	}
+}
+
+func TestAbiDecodeExtensionFieldPresent(t *testing.T) {
+	hexData := "0000000000ea305504deadbeef0568656c6c6f"
+	data, err := hex.DecodeString(hexData)
+	assert.NoError(t, err)
+
+	reader := bytes.NewReader(data)
+	decoded, err := extensionAbi.Decode(reader, "setabi")
+
+	assert.NoError(t, err)
+	result := decoded.(map[string]interface{})
+	assert.Equal(t, result["account"], chain.N("eosio"))
+	assert.Equal(t, result["abi"], chain.Bytes{0xde, 0xad, 0xbe, 0xef})
+	assert.Equal(t, result["memo"], "hello")
+}
