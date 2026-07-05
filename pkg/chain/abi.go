@@ -413,12 +413,19 @@ func (a Abi) decodeType(dec *abi.Decoder, t *resolvedType, v *interface{}) error
 		var l uint
 		l, err = dec.ReadVaruint()
 		if err == nil {
-			va := make([]interface{}, l)
+			// cap preallocation so a corrupt length can't OOM; decode errors out at the first missing element
+			capHint := l
+			if capHint > 1024 {
+				capHint = 1024
+			}
+			va := make([]interface{}, 0, capHint)
 			for i := 0; i < int(l); i++ {
-				err = a.decodeInner(dec, t, &va[i])
+				var el interface{}
+				err = a.decodeInner(dec, t, &el)
 				if err != nil {
 					return err // can't recover from this
 				}
+				va = append(va, el)
 			}
 			*v = va
 		}
