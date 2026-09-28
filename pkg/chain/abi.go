@@ -675,10 +675,11 @@ func (rt *resolvedType) allFields() []*struct {
 	if rt.fields == nil {
 		return nil
 	}
-	var rv []*struct {
+	// non-nil so a zero-field struct is still recognised as a struct by callers
+	rv := []*struct {
 		name string
 		typ  *resolvedType
-	}
+	}{}
 	var seen map[string]bool = make(map[string]bool)
 	var cur *resolvedType = rt
 	for {

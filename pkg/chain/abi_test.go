@@ -251,6 +251,25 @@ func TestAbiEncode(t *testing.T) {
 	assert.Equal(t, buf.Bytes(), transferData)
 }
 
+var noopAbi = loadAbi(`{
+	"version": "eosio::abi/1.1",
+	"structs": [{"name": "noop", "base": "", "fields": []}],
+	"actions": [{"name": "noop", "type": "noop", "ricardian_contract": ""}]
+}`)
+
+func TestAbiDecodeZeroFieldStruct(t *testing.T) {
+	rv, err := noopAbi.DecodeAction(bytes.NewReader([]byte{}), chain.N("noop"))
+	assert.NoError(t, err)
+	assert.Equal(t, rv, map[string]interface{}{})
+}
+
+func TestAbiEncodeZeroFieldStruct(t *testing.T) {
+	buf := bytes.NewBuffer(nil)
+	err := noopAbi.EncodeAction(buf, chain.N("noop"), map[string]interface{}{})
+	assert.NoError(t, err)
+	assert.Equal(t, len(buf.Bytes()), 0)
+}
+
 // ABI 1.0 binary format does not include the Variants field.
 // This tests that we can decode such ABIs without error.
 // Uses real ABI data from EOS mainnet block 128 (eosio system contract).
