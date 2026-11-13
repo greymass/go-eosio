@@ -152,6 +152,9 @@ func (tx *Transaction) UnmarshalABI(d *abi.Decoder) error {
 	if err != nil {
 		return err
 	}
+	if err = d.EnsureRemaining(len); err != nil {
+		return err
+	}
 	tx.ContextFreeActions = make([]Action, len)
 	for i := 0; i < int(len); i++ {
 		err = tx.ContextFreeActions[i].UnmarshalABI(d)
@@ -163,6 +166,9 @@ func (tx *Transaction) UnmarshalABI(d *abi.Decoder) error {
 	if err != nil {
 		return err
 	}
+	if err = d.EnsureRemaining(len); err != nil {
+		return err
+	}
 	tx.Actions = make([]Action, len)
 	for i := 0; i < int(len); i++ {
 		err = tx.Actions[i].UnmarshalABI(d)
@@ -172,6 +178,9 @@ func (tx *Transaction) UnmarshalABI(d *abi.Decoder) error {
 	}
 	len, err = d.ReadVaruint()
 	if err != nil {
+		return err
+	}
+	if err = d.EnsureRemaining(len); err != nil {
 		return err
 	}
 	tx.Extensions = make([]TransactionExtension, len)
