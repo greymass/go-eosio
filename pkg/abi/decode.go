@@ -49,6 +49,21 @@ func (dec *Decoder) hasRemaining() bool {
 	return true
 }
 
+// EnsureRemaining returns an error when the decoder's underlying reader
+// exposes a Len method (as bytes.Reader does) and fewer than n bytes remain.
+// Every decoded element occupies at least one byte, so this rejects a corrupt
+// or malicious length/count before it is used to allocate, preventing an
+// out-of-memory or makeslice panic. Readers without Len are left unchecked,
+// matching ReadBytes.
+func (dec *Decoder) EnsureRemaining(n uint) error {
+	if lr, ok := dec.r.(interface{ Len() int }); ok {
+		if rem := lr.Len(); n > uint(rem) {
+			return fmt.Errorf("abi: length %d exceeds available data (%d bytes remaining)", n, rem)
+		}
+	}
+	return nil
+}
+
 // Decode into given value.
 func (dec *Decoder) Decode(v interface{}) error {
 	var err error
@@ -279,6 +294,9 @@ func (dec *Decoder) DecodeValue(v reflect.Value) error {
 		var l uint
 		l, err = dec.ReadVaruint()
 		if err == nil {
+			if err = dec.EnsureRemaining(l); err != nil {
+				return err
+			}
 			if pv.Len() != int(l) {
 				pv.Set(reflect.MakeSlice(pv.Type(), int(l), int(l)))
 			}

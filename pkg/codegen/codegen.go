@@ -101,6 +101,9 @@ var readSliceTemplate = template.Must(template.New("").Parse(`
 	if length, err = d.ReadVaruint(); err != nil {
 		return err
 	}
+	if err = d.EnsureRemaining(uint(length)); err != nil {
+		return err
+	}
 	v.{{ .Name }} = make([]{{ .Type }}, length)
 	for i := 0; i < int(length); i++ {
 		{{- .Code }}
